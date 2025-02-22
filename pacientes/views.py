@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.messages import constants
 from .models import Pacientes
@@ -13,10 +13,8 @@ def pacientes(request):
         email = request.POST.get('email')
         telefone = request.POST.get('telefone')
         queixa = request.POST.get('queixa')
-        # foto = request.POST.get('foto')
         foto = request.FILES.get('foto')
 
-        print(nome,email,telefone,queixa,foto)
         if len(nome.strip()) == 0 or not foto:
             messages.add_message(request, constants.ERROR, 'Preencha todos os campos!')
             return render(request, 'pacientes.html', {'queixas':Pacientes.queixa_choices})
@@ -32,3 +30,17 @@ def pacientes(request):
         messages.add_message(request, constants.SUCCESS, 'Cadastro realizado com sucesso!')
 
         return render(request, 'pacientes.html', {'queixas':Pacientes.queixa_choices})
+
+def paciente_view(request, id):
+    paciente = Pacientes.objects.get(id=id)
+    if request.method == "GET":
+        return render(request, 'paciente.html', {'paciente': paciente})
+
+def atualizar_paciente(request, id):
+    pagamento_em_dia = request.POST.get('pagamento_em_dia')
+    paciente = Pacientes.objects.get(id=id)
+    status = True if pagamento_em_dia == 'ativo' else False
+    paciente.pagamento_em_dia = status
+    paciente.save()
+    return redirect(f'/pacientes/{id}')
+ 
